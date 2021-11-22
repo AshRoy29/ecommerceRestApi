@@ -13,5 +13,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/v1/product/:id", app.getOneProduct)
 	router.HandlerFunc(http.MethodGet, "/v1/products", app.getAllProducts)
 
+	router.HandlerFunc(http.MethodPost, "/test", app.test)
+
 	return app.enableCORS(router)
 }
