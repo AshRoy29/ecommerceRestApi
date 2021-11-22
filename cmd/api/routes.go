@@ -15,5 +15,7 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodPost, "/test", app.test)
 
+	router.HandlerFunc(http.MethodPost, "/image", app.insertProduct)
+
 	return app.enableCORS(router)
 }
