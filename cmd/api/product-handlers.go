@@ -56,3 +56,19 @@ func (app *application) updateProduct(w http.ResponseWriter, r *http.Request) {
 func (app *application) searchProducts(w http.ResponseWriter, r *http.Request) {
 
 }
+
+func (app *application) test(w http.ResponseWriter, r *http.Request) {
+	type jsonResp struct {
+		OK bool `json:"ok"`
+	}
+
+	ok := jsonResp{
+		OK: true,
+	}
+
+	err := app.writeJSON(w, http.StatusOK, ok, "response")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
