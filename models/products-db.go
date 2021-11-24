@@ -28,7 +28,7 @@ func (m *DBModel) Get(id int) (*Product, error) {
 		&product.Title,
 		&product.Price,
 		&product.Description,
-		&product.Image,
+		//&product.Image,
 		&product.CreatedAt,
 		&product.UpdatedAt,
 	)
@@ -92,7 +92,7 @@ func (m *DBModel) All() ([]*Product, error) {
 			&product.Title,
 			&product.Price,
 			&product.Description,
-			&product.Image,
+			//&product.Image,
 			&product.CreatedAt,
 			&product.UpdatedAt,
 		)
@@ -133,4 +133,26 @@ func (m *DBModel) All() ([]*Product, error) {
 
 	}
 	return products, nil
+}
+
+func (m *DBModel) InsertProduct(product Product) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `insert into products (title, price, description, created_at, updated_at) 
+			values ($1, $2, $3, $4, $5)`
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		product.Title,
+		product.Price,
+		product.Description,
+		product.CreatedAt,
+		product.UpdatedAt,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
