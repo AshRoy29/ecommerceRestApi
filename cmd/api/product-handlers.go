@@ -21,6 +21,11 @@ type ProductPayload struct {
 
 }
 
+type jsonResp struct {
+	OK      bool   `json:"ok"`
+	Message string `json:"message"`
+}
+
 func (app *application) getOneProduct(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
@@ -123,8 +128,10 @@ func (app *application) test(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(product.Price)
 
-	type jsonResp struct {
-		OK bool `json:"ok"`
+	err = app.models.DB.InsertProduct(product)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
 	}
 
 	ok := jsonResp{
