@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"time"
 )
 
 type ProductPayload struct {
@@ -61,10 +62,33 @@ func (app *application) getAllProducts(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) deleteProduct(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
 
+	id, err := strconv.Atoi(params.ByName("id"))
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.models.DB.DeleteProduct(id)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	ok := jsonResp{
+		OK: true,
+	}
+
+	err = app.writeJSON(w, http.StatusOK, ok, "response")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
 }
 
-func (app *application) insertProduct(w http.ResponseWriter, r *http.Request) {
+//this was insertProduct
+func (app *application) uploadImage(w http.ResponseWriter, r *http.Request) {
 	r.ParseMultipartForm(10 * 1024 * 1024)
 	file, handler, err := r.FormFile("image")
 
@@ -104,7 +128,8 @@ func (app *application) searchProducts(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *application) test(w http.ResponseWriter, r *http.Request) {
+//this was test
+func (app *application) editProducts(w http.ResponseWriter, r *http.Request) {
 
 	var payload ProductPayload
 
@@ -119,6 +144,13 @@ func (app *application) test(w http.ResponseWriter, r *http.Request) {
 
 	var product models.Product
 
+	if payload.ID != "0" {
+		id, _ := strconv.Atoi(payload.ID)
+		p, _ := app.models.DB.Get(id)
+		product = *p
+		product.UpdatedAt = time.Now()
+	}
+
 	product.ID, _ = strconv.Atoi(payload.ID)
 	product.Title = payload.Title
 	product.Price, _ = strconv.Atoi(payload.Price)
@@ -128,10 +160,18 @@ func (app *application) test(w http.ResponseWriter, r *http.Request) {
 
 	log.Println(product.Price)
 
-	err = app.models.DB.InsertProduct(product)
-	if err != nil {
-		app.errorJSON(w, err)
-		return
+	if product.ID == 0 {
+		err = app.models.DB.InsertProduct(product)
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+	} else {
+		err = app.models.DB.UpdateProduct(product)
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
 	}
 
 	ok := jsonResp{
