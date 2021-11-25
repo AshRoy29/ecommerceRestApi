@@ -156,3 +156,38 @@ func (m *DBModel) InsertProduct(product Product) error {
 
 	return nil
 }
+
+func (m *DBModel) UpdateProduct(product Product) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `update products set title = $1, price = $2, description = $3, updated_at = $4 
+			where id = $5`
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		product.Title,
+		product.Price,
+		product.Description,
+		product.UpdatedAt,
+		product.ID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DBModel) DeleteProduct(id int) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `delete from products where id = $1`
+
+	_, err := m.DB.ExecContext(ctx, stmt, id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
