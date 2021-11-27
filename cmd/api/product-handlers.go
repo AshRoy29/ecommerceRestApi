@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"path/filepath"
 	"strconv"
 	"time"
 )
@@ -19,7 +20,7 @@ type ProductPayload struct {
 	Price       string `json:"price"`
 	Description string `json:"description"`
 	//Image string `json:"image"`
-
+	CategoryID string `json:"category"`
 }
 
 type jsonResp struct {
@@ -118,6 +119,17 @@ func (app *application) uploadImage(w http.ResponseWriter, r *http.Request) {
 	tempFile.Write(fileBytes)
 
 	fmt.Println("SUCCESS")
+
+	fmt.Println(tempFile.Name())
+
+	var dir string
+
+	//files, _ := os.ReadDir(dir)
+	path, _ := filepath.Abs(dir)
+	//for _, file := range files {
+	fmt.Println(path)
+	fmt.Println(filepath.Join(path, tempFile.Name()))
+
 }
 
 func (app *application) updateProduct(w http.ResponseWriter, r *http.Request) {
@@ -143,6 +155,8 @@ func (app *application) editProducts(w http.ResponseWriter, r *http.Request) {
 	log.Println(payload.Title)
 
 	var product models.Product
+	var category models.Category
+	//var pc models.ProductCategory
 
 	if payload.ID != "0" {
 		id, _ := strconv.Atoi(payload.ID)
@@ -156,16 +170,32 @@ func (app *application) editProducts(w http.ResponseWriter, r *http.Request) {
 	product.Price, _ = strconv.Atoi(payload.Price)
 	product.Description = payload.Description
 
+	category.ID, _ = strconv.Atoi(payload.CategoryID)
+
 	//app.insertProduct(w, r)
 
-	log.Println(product.Price)
+	log.Println("Product price:", product.Price)
 
 	if product.ID == 0 {
-		err = app.models.DB.InsertProduct(product)
+		newProductID, err := app.models.DB.InsertProduct(product)
 		if err != nil {
 			app.errorJSON(w, err)
 			return
 		}
+
+		log.Println("category ID:", category.ID)
+
+		productCategory := models.ProductCategory{
+			ProductID:  newProductID,
+			CategoryID: category.ID,
+		}
+
+		err = app.models.DB.InsertCategory(productCategory)
+		if err != nil {
+			app.errorJSON(w, err)
+			return
+		}
+
 	} else {
 		err = app.models.DB.UpdateProduct(product)
 		if err != nil {
