@@ -3,6 +3,7 @@ package models
 import (
 	"context"
 	"database/sql"
+	"log"
 	"time"
 )
 
@@ -10,12 +11,12 @@ type DBModel struct {
 	DB *sql.DB
 }
 
-// Get returns one movie and error, if any
+// Get returns one product and error, if any
 func (m *DBModel) Get(id int) (*Product, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `select id, title, price, description, image,
+	query := `select id, title, price, description,
 				created_at, updated_at from products where id = $1
 	`
 
@@ -73,7 +74,7 @@ func (m *DBModel) All() ([]*Product, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `select id, title, price, description, image,
+	query := `select id, title, price, description,
 				created_at, updated_at from products order by title
 	`
 
@@ -135,19 +136,42 @@ func (m *DBModel) All() ([]*Product, error) {
 	return products, nil
 }
 
-func (m *DBModel) InsertProduct(product Product) error {
+func (m *DBModel) InsertProduct(product Product) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	stmt := `insert into products (title, price, description, created_at, updated_at) 
-			values ($1, $2, $3, $4, $5)`
+			values ($1, $2, $3, $4, $5) returning id`
 
-	_, err := m.DB.ExecContext(ctx, stmt,
+	var newID int
+	err := m.DB.QueryRowContext(ctx, stmt,
 		product.Title,
 		product.Price,
 		product.Description,
-		product.CreatedAt,
-		product.UpdatedAt,
+		time.Now(),
+		time.Now(),
+	).Scan(&newID)
+
+	log.Println("New product ID:", newID)
+	if err != nil {
+		return 0, err
+	}
+
+	return newID, nil
+}
+
+func (m *DBModel) InsertCategory(pc ProductCategory) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `insert into products_category (product_id, category_id, created_at, updated_at)
+			values ($1, $2, $3, $4)`
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		pc.ProductID,
+		pc.CategoryID,
+		time.Now(),
+		time.Now(),
 	)
 
 	if err != nil {
