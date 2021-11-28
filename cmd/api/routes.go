@@ -24,11 +24,14 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/product/:id", app.getOneProduct)
 	router.HandlerFunc(http.MethodGet, "/v1/products", app.getAllProducts)
+	router.HandlerFunc(http.MethodGet, "/v1/products/:category_id", app.getAllProductsByCategory)
 
-	router.POST("/v1/admin/editproduct", app.wrap(secure.ThenFunc(app.editProducts)))
+	router.HandlerFunc(http.MethodGet, "/v1/categories", app.getAllCategories)
+
+	//router.POST("/v1/admin/editproduct", app.wrap(secure.ThenFunc(app.editProducts)))
 	router.GET("/v1/admin/deleteproduct/:id", app.wrap(secure.ThenFunc(app.deleteProduct)))
 
-	//router.HandlerFunc(http.MethodPost, "/test", app.test)
+	router.HandlerFunc(http.MethodPost, "/v1/admin/editproduct", app.editProducts)
 
 	router.HandlerFunc(http.MethodPost, "/image", app.uploadImage)
 
