@@ -3,6 +3,8 @@ package models
 import (
 	"context"
 	"database/sql"
+	"fmt"
+	"github.com/lib/pq"
 	"log"
 	"time"
 )
@@ -70,13 +72,17 @@ func (m *DBModel) Get(id int) (*Product, error) {
 }
 
 // All returns all products and error, if any
-func (m *DBModel) All() ([]*Product, error) {
+func (m *DBModel) All(category ...int) ([]*Product, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `select id, title, price, description,
-				created_at, updated_at from products order by title
-	`
+	where := ""
+	if len(category) > 0 {
+		where = fmt.Sprintf("where id in (select product_id from products_category where category_id = %d)", category[0])
+	}
+
+	query := fmt.Sprintf(`select id, title, price, size, description, image, stock, shipping,
+				created_at, updated_at from products %s order by title`, where)
 
 	rows, err := m.DB.QueryContext(ctx, query)
 	if err != nil {
@@ -92,8 +98,11 @@ func (m *DBModel) All() ([]*Product, error) {
 			&product.ID,
 			&product.Title,
 			&product.Price,
+			pq.Array(&product.Size),
 			&product.Description,
-			//&product.Image,
+			&product.Image,
+			&product.Stock,
+			&product.Shipping,
 			&product.CreatedAt,
 			&product.UpdatedAt,
 		)
@@ -214,4 +223,37 @@ func (m *DBModel) DeleteProduct(id int) error {
 		return err
 	}
 	return nil
+}
+
+func (m *DBModel) GetAllCategory() ([]*Category, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `select id, category_name, created_at, updated_at
+			from category order by category_name`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []*Category
+
+	for rows.Next() {
+		var c Category
+
+		err := rows.Scan(
+			&c.ID,
+			&c.CategoryName,
+			&c.CreatedAt,
+			&c.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		categories = append(categories, &c)
+	}
+
+	return categories, nil
 }
