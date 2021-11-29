@@ -42,6 +42,8 @@ func (app *application) checkToken(next http.Handler) http.Handler {
 
 		token := headerParts[1]
 
+		log.Println(len(headerParts))
+
 		claims, err := jwt.HMACCheck([]byte(token), []byte(app.config.jwt.secret))
 		if err != nil {
 			app.errorJSON(w, errors.New("unauthorized - failed hmac check"))
