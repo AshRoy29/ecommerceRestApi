@@ -62,6 +62,43 @@ func (app *application) getAllProducts(w http.ResponseWriter, r *http.Request) {
 
 }
 
+func (app *application) getAllCategories(w http.ResponseWriter, r *http.Request) {
+	categories, err := app.models.DB.GetAllCategory()
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, categories, "categories")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
+func (app *application) getAllProductsByCategory(w http.ResponseWriter, r *http.Request) {
+	params := httprouter.ParamsFromContext(r.Context())
+
+	categoryID, err := strconv.Atoi(params.ByName("category_id"))
+	if err != nil {
+		app.logger.Print(errors.New("invalid id parameter"))
+		app.errorJSON(w, err)
+		return
+	}
+
+	products, err := app.models.DB.All(categoryID)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, products, "products")
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
 func (app *application) deleteProduct(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
