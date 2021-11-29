@@ -17,14 +17,25 @@ func NewModels(db *sql.DB) Models {
 }
 
 type Product struct {
-	ID          int    `json:"id"`
-	Title       string `json:"title"`
-	Price       int    `json:"price"`
-	Description string `json:"description"`
-	//Image           string         `json:"image"`
+	ID              int            `json:"id"`
+	Title           string         `json:"title"`
+	Price           int            `json:"price"`
+	Size            []string       `json:"size"`
+	Description     string         `json:"description"`
+	Image           string         `json:"image"`
+	Stock           int            `json:"stock"`
+	Shipping        bool           `json:"shipping"`
 	CreatedAt       time.Time      `json:"-"`
 	UpdatedAt       time.Time      `json:"-"`
 	ProductCategory map[int]string `json:"categories"`
+}
+
+type Size struct {
+	ID        int       `json:"id"`
+	SizeName  string    `json:"size_name"`
+	SizeStock int       `json:"size_stock"`
+	CreatedAt time.Time `json:"-"`
+	UpdatedAt time.Time `json:"-"`
 }
 
 type Category struct {
