@@ -18,7 +18,7 @@ func (m *DBModel) Get(id int) (*Product, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `select id, title, price, description,
+	query := `select id, title, price, size, description,  stock, shipping,
 				created_at, updated_at from products where id = $1
 	`
 
@@ -30,8 +30,11 @@ func (m *DBModel) Get(id int) (*Product, error) {
 		&product.ID,
 		&product.Title,
 		&product.Price,
+		pq.Array(&product.Size),
 		&product.Description,
 		//&product.Image,
+		&product.Stock,
+		&product.Shipping,
 		&product.CreatedAt,
 		&product.UpdatedAt,
 	)
@@ -81,7 +84,7 @@ func (m *DBModel) All(category ...int) ([]*Product, error) {
 		where = fmt.Sprintf("where id in (select product_id from products_category where category_id = %d)", category[0])
 	}
 
-	query := fmt.Sprintf(`select id, title, price, size, description, image, stock, shipping,
+	query := fmt.Sprintf(`select id, title, price, size, description, stock, shipping,
 				created_at, updated_at from products %s order by title`, where)
 
 	rows, err := m.DB.QueryContext(ctx, query)
@@ -98,9 +101,9 @@ func (m *DBModel) All(category ...int) ([]*Product, error) {
 			&product.ID,
 			&product.Title,
 			&product.Price,
-			pq.Array(&product.Size),
+			&product.Size,
 			&product.Description,
-			&product.Image,
+			//&product.Image,
 			&product.Stock,
 			&product.Shipping,
 			&product.CreatedAt,
@@ -149,14 +152,18 @@ func (m *DBModel) InsertProduct(product Product) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `insert into products (title, price, description, created_at, updated_at) 
-			values ($1, $2, $3, $4, $5) returning id`
+	stmt := `insert into products (title, price, size, description, image, stock, shipping, created_at, updated_at) 
+			values ($1, $2, $3, $4, $5, $6, $7, $8, $9) returning id`
 
 	var newID int
 	err := m.DB.QueryRowContext(ctx, stmt,
 		product.Title,
 		product.Price,
+		pq.Array(product.Size),
 		product.Description,
+		product.Image,
+		product.Stock,
+		product.Shipping,
 		time.Now(),
 		time.Now(),
 	).Scan(&newID)
