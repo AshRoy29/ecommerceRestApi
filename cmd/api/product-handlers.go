@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -18,8 +19,11 @@ type ProductPayload struct {
 	ID          string `json:"id"`
 	Title       string `json:"title"`
 	Price       string `json:"price"`
+	Size        string `json:"size"`
 	Description string `json:"description"`
-	//Image string `json:"image"`
+	Image       string `json:"image"`
+	Stock       string `json:"stock"`
+
 	CategoryID string `json:"category"`
 }
 
@@ -27,6 +31,10 @@ type jsonResp struct {
 	OK      bool   `json:"ok"`
 	Message string `json:"message"`
 }
+
+var dir string
+
+var product models.Product
 
 func (app *application) getOneProduct(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
@@ -159,13 +167,22 @@ func (app *application) uploadImage(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(tempFile.Name())
 
-	var dir string
-
 	//files, _ := os.ReadDir(dir)
 	path, _ := filepath.Abs(dir)
 	//for _, file := range files {
-	fmt.Println(path)
-	fmt.Println(filepath.Join(path, tempFile.Name()))
+	fmt.Println("path:", path)
+	dir = filepath.Join(path, tempFile.Name())
+
+	var i string
+
+	i = dir
+	imageDestination(i)
+
+}
+
+func imageDestination(i string) {
+
+	product.Image = i
 
 }
 
@@ -190,10 +207,11 @@ func (app *application) editProducts(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Println(payload.Title)
+	log.Println(payload.Size)
 
-	var product models.Product
+	arraySize := strings.Split(payload.Size, ",")
+
 	var category models.Category
-	//var pc models.ProductCategory
 
 	if payload.ID != "0" {
 		id, _ := strconv.Atoi(payload.ID)
@@ -205,11 +223,11 @@ func (app *application) editProducts(w http.ResponseWriter, r *http.Request) {
 	product.ID, _ = strconv.Atoi(payload.ID)
 	product.Title = payload.Title
 	product.Price, _ = strconv.Atoi(payload.Price)
+	product.Size = arraySize
 	product.Description = payload.Description
-
+	product.Stock, _ = strconv.Atoi(payload.Stock)
+	log.Println("ps:", product.Image)
 	category.ID, _ = strconv.Atoi(payload.CategoryID)
-
-	//app.insertProduct(w, r)
 
 	log.Println("Product price:", product.Price)
 
