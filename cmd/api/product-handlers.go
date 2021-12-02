@@ -9,6 +9,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -116,9 +117,18 @@ func (app *application) deleteProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = app.models.DB.DeleteProduct(id)
+	productImage, err := app.models.DB.DeleteProduct(id)
 	if err != nil {
 		app.errorJSON(w, err)
+		return
+	}
+
+	log.Println("IMAGE", productImage)
+
+	err = os.Remove(productImage)
+
+	if err != nil {
+		fmt.Println(err)
 		return
 	}
 
