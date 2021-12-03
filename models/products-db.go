@@ -18,7 +18,7 @@ func (m *DBModel) Get(id int) (*Product, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `select id, title, price, size, description,  stock, shipping,
+	query := `select id, title, price, size, description, image, stock, shipping,
 				created_at, updated_at from products where id = $1
 	`
 
@@ -32,7 +32,7 @@ func (m *DBModel) Get(id int) (*Product, error) {
 		&product.Price,
 		pq.Array(&product.Size),
 		&product.Description,
-		//&product.Image,
+		&product.Image,
 		&product.Stock,
 		&product.Shipping,
 		&product.CreatedAt,
@@ -84,7 +84,7 @@ func (m *DBModel) All(category ...int) ([]*Product, error) {
 		where = fmt.Sprintf("where id in (select product_id from products_category where category_id = %d)", category[0])
 	}
 
-	query := fmt.Sprintf(`select id, title, price, size, description, stock, shipping,
+	query := fmt.Sprintf(`select id, title, price, size, description, image, stock, shipping,
 				created_at, updated_at from products %s order by title`, where)
 
 	rows, err := m.DB.QueryContext(ctx, query)
@@ -101,9 +101,9 @@ func (m *DBModel) All(category ...int) ([]*Product, error) {
 			&product.ID,
 			&product.Title,
 			&product.Price,
-			&product.Size,
+			pq.Array(&product.Size),
 			&product.Description,
-			//&product.Image,
+			&product.Image,
 			&product.Stock,
 			&product.Shipping,
 			&product.CreatedAt,
@@ -219,17 +219,27 @@ func (m *DBModel) UpdateProduct(product Product) error {
 	return nil
 }
 
-func (m *DBModel) DeleteProduct(id int) error {
+func (m *DBModel) DeleteProduct(id int) (string, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
+	var image string
+
+	query := `select image from products where id = $1`
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+
+	err := row.Scan(
+		&image,
+	)
+
 	stmt := `delete from products where id = $1`
 
-	_, err := m.DB.ExecContext(ctx, stmt, id)
+	_, err = m.DB.ExecContext(ctx, stmt, id)
 	if err != nil {
-		return err
+		return "", err
 	}
-	return nil
+	return image, nil
 }
 
 func (m *DBModel) GetAllCategory() ([]*Category, error) {
