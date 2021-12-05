@@ -181,11 +181,11 @@ func (app *application) uploadImage(w http.ResponseWriter, r *http.Request) {
 	path, _ := filepath.Abs(dir)
 	//for _, file := range files {
 	fmt.Println("path:", path)
-	dir = filepath.Join(path, tempFile.Name())
+	imageDir := filepath.Join(path, tempFile.Name())
 
 	var i string
 
-	i = dir
+	i = imageDir
 	imageDestination(i)
 
 }
