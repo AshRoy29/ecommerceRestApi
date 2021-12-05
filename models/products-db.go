@@ -201,13 +201,17 @@ func (m *DBModel) UpdateProduct(product Product) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `update products set title = $1, price = $2, description = $3, updated_at = $4 
-			where id = $5`
+	stmt := `update products set title = $1, price = $2, size = $3, description = $4, image = $5, stock = $6, shipping = $7, updated_at = $8 
+			where id = $9`
 
 	_, err := m.DB.ExecContext(ctx, stmt,
 		product.Title,
 		product.Price,
+		product.Size,
 		product.Description,
+		product.Image,
+		product.Stock,
+		product.Shipping,
 		product.UpdatedAt,
 		product.ID,
 	)
