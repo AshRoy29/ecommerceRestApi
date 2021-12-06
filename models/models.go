@@ -55,7 +55,13 @@ type ProductCategory struct {
 }
 
 type User struct {
-	ID       int    `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	ID          int       `json:"id"`
+	FirstName   string    `json:"first_name"`
+	LastName    string    `json:"last_name"`
+	Phone       string    `json:"phone"`
+	Email       string    `json:"email"`
+	Password    string    `json:"password"`
+	AccessLevel int       `json:"access_level"`
+	CreatedAt   time.Time `json:"-"`
+	UpdatedAt   time.Time `json:"-"`
 }
