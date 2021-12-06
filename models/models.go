@@ -61,7 +61,7 @@ type User struct {
 	Phone       string    `json:"phone"`
 	Email       string    `json:"email"`
 	Password    string    `json:"password"`
-	AccessLevel int       `json:"access_level"`
+	AccessLevel string    `json:"access_level"`
 	CreatedAt   time.Time `json:"-"`
 	UpdatedAt   time.Time `json:"-"`
 }
