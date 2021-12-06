@@ -207,13 +207,33 @@ func (m *DBModel) UpdateProduct(product Product) error {
 	_, err := m.DB.ExecContext(ctx, stmt,
 		product.Title,
 		product.Price,
-		product.Size,
+		pq.Array(product.Size),
 		product.Description,
 		product.Image,
 		product.Stock,
 		product.Shipping,
 		product.UpdatedAt,
 		product.ID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DBModel) UpdateCategory(pc ProductCategory) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `update products_category set category_id = $1, updated_at = $2
+			where product_id = $3`
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		pc.CategoryID,
+		pc.UpdatedAt,
+		pc.ProductID,
 	)
 
 	if err != nil {
@@ -277,4 +297,59 @@ func (m *DBModel) GetAllCategory() ([]*Category, error) {
 	}
 
 	return categories, nil
+}
+
+func (m *DBModel) NewUser(u User) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `insert into users (first_name, last_name, phone, email, password, access_level, created_at, updated_at)
+			values ($1, $2, $3, $4, $5, $6, $7, $8)`
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		u.FirstName,
+		u.LastName,
+		u.Phone,
+		u.Email,
+		u.Password,
+		1,
+		time.Now(),
+		time.Now(),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (m *DBModel) ValidUser(email string) (string, int, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `select password, access_level
+			from users
+			where email = $1`
+
+	row := m.DB.QueryRowContext(ctx, query, email)
+
+	var password string
+	var level int
+
+	err := row.Scan(
+		//&user.ID,
+		//&user.FirstName,
+		//&user.LastName,
+		//&user.Phone,
+		//&user.Email,
+		&password,
+		&level,
+	//&user.AccessLevel,
+	)
+	if err != nil {
+		return "", 0, err
+	}
+
+	return password, level, err
+
 }
