@@ -312,7 +312,7 @@ func (m *DBModel) NewUser(u User) error {
 		u.Phone,
 		u.Email,
 		u.Password,
-		1,
+		"user",
 		time.Now(),
 		time.Now(),
 	)
@@ -323,33 +323,54 @@ func (m *DBModel) NewUser(u User) error {
 	return nil
 }
 
-func (m *DBModel) ValidUser(email string) (string, int, error) {
+func (m *DBModel) ValidUser(email string) (*User, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	query := `select password, access_level
+	query := `select id, first_name, last_name, phone, email, password, access_level
 			from users
 			where email = $1`
 
 	row := m.DB.QueryRowContext(ctx, query, email)
 
-	var password string
-	var level int
+	//var password string
+	//var level string
+	var user User
 
 	err := row.Scan(
-		//&user.ID,
-		//&user.FirstName,
-		//&user.LastName,
-		//&user.Phone,
-		//&user.Email,
-		&password,
-		&level,
+		&user.ID,
+		&user.FirstName,
+		&user.LastName,
+		&user.Phone,
+		&user.Email,
+		&user.Password,
+		&user.AccessLevel,
 	//&user.AccessLevel,
 	)
 	if err != nil {
-		return "", 0, err
+		return nil, err
 	}
 
-	return password, level, err
+	return &user, err
 
+}
+
+func (m *DBModel) CheckEmail(email string) (string, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	query := `select email from users where email = $1`
+
+	row := m.DB.QueryRowContext(ctx, query, email)
+
+	var userEmail string
+
+	err := row.Scan(
+		&userEmail,
+	)
+	if err != nil {
+		return "", err
+	}
+
+	return userEmail, nil
 }
