@@ -34,6 +34,7 @@ type jsonResp struct {
 }
 
 var dir string
+var imageDir string
 
 var product models.Product
 
@@ -126,7 +127,6 @@ func (app *application) deleteProduct(w http.ResponseWriter, r *http.Request) {
 	log.Println("IMAGE", productImage)
 
 	err = os.Remove(productImage)
-
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -181,19 +181,14 @@ func (app *application) uploadImage(w http.ResponseWriter, r *http.Request) {
 	path, _ := filepath.Abs(dir)
 	//for _, file := range files {
 	fmt.Println("path:", path)
-	imageDir := filepath.Join(path, tempFile.Name())
-
-	var i string
-
-	i = imageDir
-	imageDestination(i)
+	imageDir = filepath.Join(path, tempFile.Name())
 
 }
 
 func imageDestination(i string) {
 
 	product.Image = i
-
+	log.Println("product ID:", product.ID)
 }
 
 func (app *application) updateProduct(w http.ResponseWriter, r *http.Request) {
@@ -236,12 +231,14 @@ func (app *application) editProducts(w http.ResponseWriter, r *http.Request) {
 	product.Size = arraySize
 	product.Description = payload.Description
 	product.Stock, _ = strconv.Atoi(payload.Stock)
+
 	log.Println("ps:", product.Image)
 	category.ID, _ = strconv.Atoi(payload.CategoryID)
 
 	log.Println("Product price:", product.Price)
 
 	if product.ID == 0 {
+		imageDestination(imageDir)
 		newProductID, err := app.models.DB.InsertProduct(product)
 		if err != nil {
 			app.errorJSON(w, err)
@@ -262,6 +259,13 @@ func (app *application) editProducts(w http.ResponseWriter, r *http.Request) {
 		}
 
 	} else {
+		err = os.Remove(product.Image)
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		imageDestination(imageDir)
 		err = app.models.DB.UpdateProduct(product)
 		if err != nil {
 			app.errorJSON(w, err)
