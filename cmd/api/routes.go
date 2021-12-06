@@ -20,6 +20,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodGet, "/status", app.statusHandler)
 
 	router.HandlerFunc(http.MethodPost, "/v1/signin", app.signin)
+	router.HandlerFunc(http.MethodPost, "/v1/signup", app.signup)
 
 	router.HandlerFunc(http.MethodGet, "/v1/product/:id", app.getOneProduct)
 	router.HandlerFunc(http.MethodGet, "/v1/products", app.getAllProducts)
