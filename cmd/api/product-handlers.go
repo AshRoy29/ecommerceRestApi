@@ -28,6 +28,14 @@ type ProductPayload struct {
 	CategoryID string `json:"category"`
 }
 
+type CartPayload struct {
+	UserID      string `json:"user_id"`
+	ProductID   string `json:"product_id"`
+	Size        string `json:"size"`
+	Quantity    string `json:"quantity"`
+	TotalAmount string `json:"total_amount"`
+}
+
 type jsonResp struct {
 	OK      bool   `json:"ok"`
 	Message string `json:"message"`
@@ -191,9 +199,19 @@ func imageDestination(i string) {
 	log.Println("product ID:", product.ID)
 }
 
-func (app *application) updateProduct(w http.ResponseWriter, r *http.Request) {
-
-}
+//func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
+//
+//	var payload CartPayload
+//
+//	err := json.NewDecoder(r.Body).Decode(&payload)
+//	if err != nil {
+//		log.Println(err)
+//		app.errorJSON(w, err)
+//		return
+//	}
+//
+//
+//}
 
 func (app *application) searchProducts(w http.ResponseWriter, r *http.Request) {
 
