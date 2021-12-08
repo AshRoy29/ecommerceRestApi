@@ -42,7 +42,7 @@ type Token struct {
 	Phone       string `json:"phone"`
 	Email       string `json:"email"`
 	AccessLevel string `json:"access_level"`
-	JwtBytes    []byte `json:"jwt"`
+	JwtBytes    string `json:"jwt"`
 }
 
 func (app *application) signup(w http.ResponseWriter, r *http.Request) {
@@ -68,6 +68,7 @@ func (app *application) signup(w http.ResponseWriter, r *http.Request) {
 	} else {
 		user.Email = payload.Email
 	}
+
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(payload.Password), 12)
 	user.Password = string(hashedPassword)
 
@@ -114,11 +115,12 @@ func (app *application) signin(w http.ResponseWriter, r *http.Request) {
 	token.Email = validUser.Email
 	token.AccessLevel = validUser.AccessLevel
 
-	token.JwtBytes, err = claim.HMACSign(jwt.HS256, []byte(app.config.jwt.secret))
+	jwtBytes, err := claim.HMACSign(jwt.HS256, []byte(app.config.jwt.secret))
 	if err != nil {
 		app.errorJSON(w, errors.New("error signing in"))
 		return
 	}
+	token.JwtBytes = string(jwtBytes)
 
 	app.writeJSON(w, http.StatusOK, token, "response")
 }
