@@ -65,3 +65,14 @@ type User struct {
 	CreatedAt   time.Time `json:"-"`
 	UpdatedAt   time.Time `json:"-"`
 }
+
+//type BillingInfo struct {
+//	ID int `json:"id"`
+//	UserID int `json:"user_id"`
+//	City string `json:"city"`
+//	Street string `json:"street"`
+//	PostalCode string `json:"postal_code"`
+//	Address string `json:"address"`
+//	CreatedAt   time.Time `json:"-"`
+//	UpdatedAt   time.Time `json:"-"`
+//}
