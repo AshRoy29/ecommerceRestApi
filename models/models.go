@@ -66,6 +66,13 @@ type User struct {
 	UpdatedAt   time.Time `json:"-"`
 }
 
+type CartProducts struct {
+	ID    []int    `json:"id"`
+	Size  []string `json:"size"`
+	Name  []string `json:"name"`
+	Price []int    `json:"price"`
+}
+
 //type BillingInfo struct {
 //	ID int `json:"id"`
 //	UserID int `json:"user_id"`
