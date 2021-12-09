@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"github.com/julienschmidt/httprouter"
+	"github.com/justinas/alice"
 	"net/http"
 )
 
@@ -15,7 +16,7 @@ func (app *application) wrap(next http.Handler) httprouter.Handle {
 
 func (app *application) routes() http.Handler {
 	router := httprouter.New()
-	//secure := alice.New(app.checkToken)
+	secure := alice.New(app.checkToken)
 
 	router.HandlerFunc(http.MethodGet, "/status", app.statusHandler)
 
@@ -28,11 +29,13 @@ func (app *application) routes() http.Handler {
 
 	router.HandlerFunc(http.MethodGet, "/v1/categories", app.getAllCategories)
 
-	//router.POST("/v1/admin/editproduct", app.wrap(secure.ThenFunc(app.editProducts)))
-	//router.GET("/v1/admin/deleteproduct/:id", app.wrap(secure.ThenFunc(app.deleteProduct)))
+	router.POST("/v1/admin/editproduct", app.wrap(secure.ThenFunc(app.editProducts)))
+	router.GET("/v1/admin/deleteproduct/:id", app.wrap(secure.ThenFunc(app.deleteProduct)))
 
-	router.HandlerFunc(http.MethodPost, "/v1/admin/editproduct", app.editProducts)
-	router.HandlerFunc(http.MethodGet, "/v1/admin/deleteproduct/:id", app.deleteProduct)
+	//router.HandlerFunc(http.MethodPost, "/v1/admin/editproduct", app.editProducts)
+	//router.HandlerFunc(http.MethodGet, "/v1/admin/deleteproduct/:id", app.deleteProduct)
+
+	router.HandlerFunc(http.MethodGet, "/v1/cart", app.userCart)
 
 	router.HandlerFunc(http.MethodPost, "/image", app.uploadImage)
 
