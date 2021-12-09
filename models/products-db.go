@@ -375,6 +375,26 @@ func (m *DBModel) CheckEmail(email string) (string, error) {
 	return userEmail, nil
 }
 
+func (m *DBModel) CartOrders(cp CartProducts) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `insert into orders (product_id, product_size, product_name, product_price)
+			values ($1, $2, $3, $4)`
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		pq.Array(cp.ID),
+		pq.Array(cp.Size),
+		pq.Array(cp.Name),
+		pq.Array(cp.Price),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 //func (m *DBModel) BillingInfo(b BillingInfo) error {
 //	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 //	defer cancel()
