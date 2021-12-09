@@ -29,11 +29,14 @@ type ProductPayload struct {
 }
 
 type CartPayload struct {
-	UserID      string `json:"user_id"`
-	ProductID   string `json:"product_id"`
-	Size        string `json:"size"`
-	Quantity    string `json:"quantity"`
-	TotalAmount string `json:"total_amount"`
+	Product []Product `json:"product"`
+}
+
+type Product struct {
+	ID    string `json:"id"`
+	Size  string `json:"size"`
+	Name  string `json:"name"`
+	Price int    `json:"price"`
 }
 
 type jsonResp struct {
@@ -199,19 +202,54 @@ func imageDestination(i string) {
 	log.Println("product ID:", product.ID)
 }
 
-//func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
-//
-//	var payload CartPayload
-//
-//	err := json.NewDecoder(r.Body).Decode(&payload)
-//	if err != nil {
-//		log.Println(err)
-//		app.errorJSON(w, err)
-//		return
-//	}
-//
-//
-//}
+func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
+
+	var payload CartPayload
+
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		log.Println(err)
+		app.errorJSON(w, err)
+		return
+	}
+
+	var cart models.CartProducts
+
+	cart.ID = make([]int, len(payload.Product))
+	cart.Size = make([]string, len(payload.Product))
+	cart.Name = make([]string, len(payload.Product))
+	cart.Price = make([]int, len(payload.Product))
+
+	for i := 0; i < len(payload.Product); i++ {
+		productID := strings.Split(payload.Product[i].ID, ",")
+		cart.ID[i], _ = strconv.Atoi(productID[0])
+		cart.Size[i] = payload.Product[i].Size
+		cart.Name[i] = payload.Product[i].Name
+		cart.Price[i] = payload.Product[i].Price
+	}
+
+	err = app.models.DB.CartOrders(cart)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+	//cart.ID = productID
+
+	//log.Println(cart.ID[0])
+	//log.Println(cart.ID[1])
+
+	//var cart models.CartProducts
+	//
+	//n := 0
+	//
+	//pr := payload.Product[n]
+	//for n, p := range pr.ID  {
+	//	log.Println(n , p)
+	//}
+
+	//log.Println(pr.ID)
+
+}
 
 func (app *application) searchProducts(w http.ResponseWriter, r *http.Request) {
 
