@@ -233,21 +233,6 @@ func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
 		app.errorJSON(w, err)
 		return
 	}
-	//cart.ID = productID
-
-	//log.Println(cart.ID[0])
-	//log.Println(cart.ID[1])
-
-	//var cart models.CartProducts
-	//
-	//n := 0
-	//
-	//pr := payload.Product[n]
-	//for n, p := range pr.ID  {
-	//	log.Println(n , p)
-	//}
-
-	//log.Println(pr.ID)
 
 }
 
