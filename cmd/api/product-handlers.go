@@ -30,13 +30,15 @@ type ProductPayload struct {
 
 type CartPayload struct {
 	Product []Product `json:"product"`
+	UserID  int       `json:"user"`
+	Total   int       `json:"total"`
 }
 
 type Product struct {
-	ID    string `json:"id"`
-	Size  string `json:"size"`
-	Name  string `json:"name"`
-	Price int    `json:"price"`
+	ID       string `json:"id"`
+	Size     string `json:"size"`
+	Price    int    `json:"price"`
+	Quantity int    `json:"quantity"`
 }
 
 type jsonResp struct {
@@ -217,16 +219,19 @@ func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
 
 	cart.ID = make([]int, len(payload.Product))
 	cart.Size = make([]string, len(payload.Product))
-	cart.Name = make([]string, len(payload.Product))
 	cart.Price = make([]int, len(payload.Product))
+	cart.Quantity = make([]int, len(payload.Product))
 
 	for i := 0; i < len(payload.Product); i++ {
 		productID := strings.Split(payload.Product[i].ID, ",")
 		cart.ID[i], _ = strconv.Atoi(productID[0])
-		cart.Size[i] = payload.Product[i].Size
-		cart.Name[i] = payload.Product[i].Name
+		cart.Size[i] = productID[1]
 		cart.Price[i] = payload.Product[i].Price
+		cart.Quantity[i] = payload.Product[i].Quantity
 	}
+
+	cart.UserID = payload.UserID
+	cart.Total = payload.Total
 
 	err = app.models.DB.CartOrders(cart)
 	if err != nil {
