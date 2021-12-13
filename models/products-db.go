@@ -379,14 +379,16 @@ func (m *DBModel) CartOrders(cp CartProducts) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `insert into orders (product_id, product_size, product_name, product_price)
-			values ($1, $2, $3, $4)`
+	stmt := `insert into orders (product_id, product_size, product_price, quantity, user_id, total)
+			values ($1, $2, $3, $4, $5, $6)`
 
 	_, err := m.DB.ExecContext(ctx, stmt,
 		pq.Array(cp.ID),
 		pq.Array(cp.Size),
-		pq.Array(cp.Name),
 		pq.Array(cp.Price),
+		pq.Array(cp.Quantity),
+		cp.UserID,
+		cp.Total,
 	)
 	if err != nil {
 		return err
