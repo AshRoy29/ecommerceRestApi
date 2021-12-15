@@ -77,11 +77,11 @@ type CartProducts struct {
 
 type BillingInfo struct {
 	ID         int       `json:"id"`
-	UserID     int       `json:"user_id"`
-	City       string    `json:"city"`
-	Street     string    `json:"street"`
-	PostalCode string    `json:"postal_code"`
+	Name       string    `json:"name"`
+	Phone      string    `json:"phone"`
 	Address    string    `json:"address"`
+	PostalCode string    `json:"postal_code"`
+	City       string    `json:"city"`
 	CreatedAt  time.Time `json:"-"`
 	UpdatedAt  time.Time `json:"-"`
 }
