@@ -241,8 +241,22 @@ func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (app *application) searchProducts(w http.ResponseWriter, r *http.Request) {
+func (app *application) userBill(w http.ResponseWriter, r *http.Request) {
 
+	var bill models.BillingInfo
+
+	err := json.NewDecoder(r.Body).Decode(&bill)
+	if err != nil {
+		log.Println(err)
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.models.DB.BillingInfo(bill)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
 }
 
 //this was test
