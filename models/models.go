@@ -82,6 +82,7 @@ type BillingInfo struct {
 	Address    string    `json:"address"`
 	PostalCode string    `json:"postal_code"`
 	City       string    `json:"city"`
+	UserID     int       `json:"user_id"`
 	CreatedAt  time.Time `json:"-"`
 	UpdatedAt  time.Time `json:"-"`
 }
