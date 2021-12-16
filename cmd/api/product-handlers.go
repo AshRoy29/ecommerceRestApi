@@ -49,6 +49,8 @@ type jsonResp struct {
 var dir string
 var imageDir string
 
+var cartUserID int
+
 var product models.Product
 
 func (app *application) getOneProduct(w http.ResponseWriter, r *http.Request) {
@@ -233,7 +235,7 @@ func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
 	cart.UserID = payload.UserID
 	cart.Total = payload.Total
 
-	err = app.models.DB.CartOrders(cart)
+	cartUserID, err = app.models.DB.CartOrders(cart)
 	if err != nil {
 		app.errorJSON(w, err)
 		return
@@ -251,6 +253,8 @@ func (app *application) userBill(w http.ResponseWriter, r *http.Request) {
 		app.errorJSON(w, err)
 		return
 	}
+
+	bill.UserID = cartUserID
 
 	err = app.models.DB.BillingInfo(bill)
 	if err != nil {
