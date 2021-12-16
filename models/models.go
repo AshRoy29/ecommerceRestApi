@@ -67,12 +67,15 @@ type User struct {
 }
 
 type CartProducts struct {
-	ID       []int    `json:"id"`
-	Size     []string `json:"size"`
-	Price    []int    `json:"price"`
-	Quantity []int    `json:"quantity"`
-	UserID   int      `json:"user"`
-	Total    int      `json:"total"`
+	ID          int         `json:"id"`
+	ProductID   []string    `json:"product_id"`
+	Size        []string    `json:"size"`
+	Price       []string    `json:"price"`
+	Quantity    []string    `json:"quantity"`
+	UserID      int         `json:"user"`
+	Total       int         `json:"total"`
+	BillingInfo BillingInfo `json:"billing_info"`
+	User        User        `json:"user_info"`
 }
 
 type BillingInfo struct {
