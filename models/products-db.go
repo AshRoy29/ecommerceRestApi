@@ -375,26 +375,26 @@ func (m *DBModel) CheckEmail(email string) (string, error) {
 	return userEmail, nil
 }
 
-func (m *DBModel) CartOrders(cp CartProducts) error {
+func (m *DBModel) CartOrders(cp CartProducts) (int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	stmt := `insert into orders (product_id, product_size, product_price, quantity, user_id, total)
-			values ($1, $2, $3, $4, $5, $6)`
+			values ($1, $2, $3, $4, $5, $6) returning user_id`
 
-	_, err := m.DB.ExecContext(ctx, stmt,
+	err := m.DB.QueryRowContext(ctx, stmt,
 		pq.Array(cp.ID),
 		pq.Array(cp.Size),
 		pq.Array(cp.Price),
 		pq.Array(cp.Quantity),
 		cp.UserID,
 		cp.Total,
-	)
+	).Scan(cp.UserID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
-	return nil
+	return cp.UserID, nil
 }
 
 func (m *DBModel) BillingInfo(b BillingInfo) error {
@@ -410,6 +410,7 @@ func (m *DBModel) BillingInfo(b BillingInfo) error {
 		b.Address,
 		b.PostalCode,
 		b.City,
+		b.UserID,
 		time.Now(),
 		time.Now(),
 	)
