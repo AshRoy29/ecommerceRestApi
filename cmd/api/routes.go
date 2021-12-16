@@ -38,6 +38,8 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/cart", app.userCart)
 	router.HandlerFunc(http.MethodPost, "/v1/billing", app.userBill)
 
+	router.HandlerFunc(http.MethodGet, "/v1/orders", app.getAllOrders)
+
 	router.HandlerFunc(http.MethodPost, "/image", app.uploadImage)
 
 	return app.enableCORS(router)
