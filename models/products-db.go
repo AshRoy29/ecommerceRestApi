@@ -401,15 +401,15 @@ func (m *DBModel) BillingInfo(b BillingInfo) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `insert into billing_info (user_id, city, street, postal_code, address, created_at, updated_at)
+	stmt := `insert into billing_info (name, phone, address, postal_code, city, created_at, updated_at)
 			values ($1, $2, $3, $4, $5, $6, $7)`
 
 	_, err := m.DB.ExecContext(ctx, stmt,
-		b.UserID,
-		b.City,
-		b.Street,
-		b.PostalCode,
+		b.Name,
+		b.Phone,
 		b.Address,
+		b.PostalCode,
+		b.City,
 		time.Now(),
 		time.Now(),
 	)
