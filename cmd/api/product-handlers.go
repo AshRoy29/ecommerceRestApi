@@ -219,17 +219,17 @@ func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
 
 	var cart models.CartProducts
 
-	cart.ID = make([]int, len(payload.Product))
+	cart.ProductID = make([]string, len(payload.Product))
 	cart.Size = make([]string, len(payload.Product))
-	cart.Price = make([]int, len(payload.Product))
-	cart.Quantity = make([]int, len(payload.Product))
+	cart.Price = make([]string, len(payload.Product))
+	cart.Quantity = make([]string, len(payload.Product))
 
 	for i := 0; i < len(payload.Product); i++ {
 		productID := strings.Split(payload.Product[i].ID, ",")
-		cart.ID[i], _ = strconv.Atoi(productID[0])
+		cart.ProductID[i] = productID[0]
 		cart.Size[i] = productID[1]
-		cart.Price[i] = payload.Product[i].Price
-		cart.Quantity[i] = payload.Product[i].Quantity
+		cart.Price[i] = strconv.Itoa(payload.Product[i].Price)
+		cart.Quantity[i] = strconv.Itoa(payload.Product[i].Quantity)
 	}
 
 	cart.UserID = payload.UserID
@@ -240,6 +240,7 @@ func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
 		app.errorJSON(w, err)
 		return
 	}
+	log.Println(cartUserID)
 
 }
 
@@ -257,6 +258,20 @@ func (app *application) userBill(w http.ResponseWriter, r *http.Request) {
 	bill.UserID = cartUserID
 
 	err = app.models.DB.BillingInfo(bill)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+}
+
+func (app *application) getAllOrders(w http.ResponseWriter, r *http.Request) {
+	orders, err := app.models.DB.AllOrders()
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
+	err = app.writeJSON(w, http.StatusOK, orders, "orders")
 	if err != nil {
 		app.errorJSON(w, err)
 		return
