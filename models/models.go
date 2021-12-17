@@ -55,13 +55,13 @@ type ProductCategory struct {
 }
 
 type User struct {
-	ID          int       `json:"id"`
+	ID          int       `json:"-"`
 	FirstName   string    `json:"first_name"`
 	LastName    string    `json:"last_name"`
 	Phone       string    `json:"phone"`
 	Email       string    `json:"email"`
-	Password    string    `json:"password"`
-	AccessLevel string    `json:"access_level"`
+	Password    string    `json:"-"`
+	AccessLevel string    `json:"-"`
 	CreatedAt   time.Time `json:"-"`
 	UpdatedAt   time.Time `json:"-"`
 }
@@ -72,20 +72,21 @@ type CartProducts struct {
 	Size        []string    `json:"size"`
 	Price       []string    `json:"price"`
 	Quantity    []string    `json:"quantity"`
-	UserID      int         `json:"user"`
+	UserID      int         `json:"-"`
 	Total       int         `json:"total"`
 	BillingInfo BillingInfo `json:"billing_info"`
 	User        User        `json:"user_info"`
 }
 
 type BillingInfo struct {
-	ID         int       `json:"id"`
+	ID         int       `json:"-"`
 	Name       string    `json:"name"`
 	Phone      string    `json:"phone"`
 	Address    string    `json:"address"`
 	PostalCode string    `json:"postal_code"`
 	City       string    `json:"city"`
 	UserID     int       `json:"user_id"`
-	CreatedAt  time.Time `json:"-"`
+	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"-"`
+	OrderID    int       `json:"-"`
 }
