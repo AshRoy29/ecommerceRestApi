@@ -375,36 +375,37 @@ func (m *DBModel) CheckEmail(email string) (string, error) {
 	return userEmail, nil
 }
 
-func (m *DBModel) CartOrders(cp CartProducts) (int, error) {
+func (m *DBModel) CartOrders(cp CartProducts) (int, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	stmt := `insert into orders (product_id, product_size, product_price, quantity, user_id, total)
-			values ($1, $2, $3, $4, $5, $6) returning user_id`
+			values ($1, $2, $3, $4, $5, $6) returning user_id, id`
 
 	var userID int
+	var orderID int
 
 	err := m.DB.QueryRowContext(ctx, stmt,
-		pq.Array(cp.ID),
+		pq.Array(cp.ProductID),
 		pq.Array(cp.Size),
 		pq.Array(cp.Price),
 		pq.Array(cp.Quantity),
 		cp.UserID,
 		cp.Total,
-	).Scan(&userID)
+	).Scan(&userID, &orderID)
 	if err != nil {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return userID, nil
+	return userID, orderID, nil
 }
 
 func (m *DBModel) BillingInfo(b BillingInfo) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `insert into billing_info (name, phone, address, postal_code, city, user_id, created_at, updated_at)
-			values ($1, $2, $3, $4, $5, $6, $7, $8)`
+	stmt := `insert into billing_info (name, phone, address, postal_code, city, user_id, created_at, updated_at, order_id)
+			values ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
 	_, err := m.DB.ExecContext(ctx, stmt,
 		b.Name,
@@ -415,6 +416,7 @@ func (m *DBModel) BillingInfo(b BillingInfo) error {
 		b.UserID,
 		time.Now(),
 		time.Now(),
+		b.OrderID,
 	)
 	if err != nil {
 		return err
@@ -427,37 +429,12 @@ func (m *DBModel) AllOrders() ([]*CartProducts, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	//query := `select id, product_id, product_size, product_price, quantity, total
-	//		from orders order by id`
-	//
-	//rows, err := m.DB.QueryContext(ctx, query)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//defer rows.Close()
-	//
-	//var orders []*CartProducts
-	//
-	//for rows.Next() {
-	//	var order CartProducts
-	//	err := rows.Scan(
-	//		&order.ID,
-	//		&order.ProductID,
-	//		&order.Size,
-	//		&order.Price,
-	//		&order.Quantity,
-	//		&order.Total,
-	//		)
-	//	if err != nil {
-	//		return nil, err
-	//	}
-
 	query := `select
 						o.id, o.product_id, o.product_size, o.product_price, o.quantity, o.total,
 						bi.name, bi.phone, bi.address, bi.postal_code, bi.city, bi.user_id, bi.created_at,
 						u.first_name, u.last_name, u.phone, u.email
 					from orders o
-					left join billing_info bi on (bi.user_id = o.user_id)
+					left join billing_info bi on (bi.order_id = o.id)
 					left join users u on (u.id = bi.user_id)`
 
 	rows, err := m.DB.QueryContext(ctx, query)
@@ -470,6 +447,7 @@ func (m *DBModel) AllOrders() ([]*CartProducts, error) {
 
 	for rows.Next() {
 		var order CartProducts
+
 		err := rows.Scan(
 			&order.ID,
 			pq.Array(&order.ProductID),
