@@ -39,6 +39,7 @@ func (app *application) routes() http.Handler {
 	router.HandlerFunc(http.MethodPost, "/v1/billing", app.userBill)
 
 	router.HandlerFunc(http.MethodGet, "/v1/orders", app.getAllOrders)
+	router.HandlerFunc(http.MethodPost, "/v1/status", app.orderStatus)
 
 	router.HandlerFunc(http.MethodPost, "/image", app.uploadImage)
 
