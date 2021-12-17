@@ -46,6 +46,11 @@ type jsonResp struct {
 	Message string `json:"message"`
 }
 
+type OrderStatus struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
+}
+
 var dir string
 var imageDir string
 
@@ -279,6 +284,32 @@ func (app *application) getAllOrders(w http.ResponseWriter, r *http.Request) {
 		app.errorJSON(w, err)
 		return
 	}
+}
+
+func (app *application) orderStatus(w http.ResponseWriter, r *http.Request) {
+
+	var payload OrderStatus
+
+	err := json.NewDecoder(r.Body).Decode(&payload)
+	if err != nil {
+		log.Println(err)
+		app.errorJSON(w, err)
+		return
+	}
+
+	orderID, _ := strconv.Atoi(payload.ID)
+
+	status := models.CartProducts{
+		ID:     orderID,
+		Status: payload.Status,
+	}
+
+	err = app.models.DB.UpdateStatus(status)
+	if err != nil {
+		app.errorJSON(w, err)
+		return
+	}
+
 }
 
 //this was test
