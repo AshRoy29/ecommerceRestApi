@@ -74,6 +74,7 @@ type CartProducts struct {
 	Quantity    []string    `json:"quantity"`
 	UserID      int         `json:"-"`
 	Total       int         `json:"total"`
+	Status      string      `json:"status"`
 	BillingInfo BillingInfo `json:"billing_info"`
 	User        User        `json:"user_info"`
 }
