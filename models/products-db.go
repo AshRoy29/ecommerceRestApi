@@ -379,8 +379,8 @@ func (m *DBModel) CartOrders(cp CartProducts) (int, int, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
-	stmt := `insert into orders (product_id, product_size, product_price, quantity, user_id, total)
-			values ($1, $2, $3, $4, $5, $6) returning user_id, id`
+	stmt := `insert into orders (product_id, product_size, product_price, quantity, user_id, total, status)
+			values ($1, $2, $3, $4, $5, $6, $7) returning user_id, id`
 
 	var userID int
 	var orderID int
@@ -392,6 +392,7 @@ func (m *DBModel) CartOrders(cp CartProducts) (int, int, error) {
 		pq.Array(cp.Quantity),
 		cp.UserID,
 		cp.Total,
+		cp.Status,
 	).Scan(&userID, &orderID)
 	if err != nil {
 		return 0, 0, err
@@ -430,7 +431,7 @@ func (m *DBModel) AllOrders() ([]*CartProducts, error) {
 	defer cancel()
 
 	query := `select
-						o.id, o.product_id, o.product_size, o.product_price, o.quantity, o.total,
+						o.id, o.product_id, o.product_size, o.product_price, o.quantity, o.total, o.status,
 						bi.name, bi.phone, bi.address, bi.postal_code, bi.city, bi.user_id, bi.created_at,
 						u.first_name, u.last_name, u.phone, u.email
 					from orders o
@@ -455,6 +456,7 @@ func (m *DBModel) AllOrders() ([]*CartProducts, error) {
 			pq.Array(&order.Price),
 			pq.Array(&order.Quantity),
 			&order.Total,
+			&order.Status,
 			&order.BillingInfo.Name,
 			&order.BillingInfo.Phone,
 			&order.BillingInfo.Address,
@@ -475,4 +477,23 @@ func (m *DBModel) AllOrders() ([]*CartProducts, error) {
 	}
 
 	return orders, nil
+}
+
+func (m *DBModel) UpdateStatus(cp CartProducts) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	stmt := `update orders set status = $1
+			where id = $2`
+
+	_, err := m.DB.ExecContext(ctx, stmt,
+		cp.Status,
+		cp.ID,
+	)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
