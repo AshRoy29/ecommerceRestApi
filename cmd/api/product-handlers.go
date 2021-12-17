@@ -50,6 +50,7 @@ var dir string
 var imageDir string
 
 var cartUserID int
+var cartOrderID int
 
 var product models.Product
 
@@ -235,12 +236,13 @@ func (app *application) userCart(w http.ResponseWriter, r *http.Request) {
 	cart.UserID = payload.UserID
 	cart.Total = payload.Total
 
-	cartUserID, err = app.models.DB.CartOrders(cart)
+	cartUserID, cartOrderID, err = app.models.DB.CartOrders(cart)
 	if err != nil {
 		app.errorJSON(w, err)
 		return
 	}
 	log.Println(cartUserID)
+	log.Println(cartOrderID)
 
 }
 
@@ -256,6 +258,7 @@ func (app *application) userBill(w http.ResponseWriter, r *http.Request) {
 	}
 
 	bill.UserID = cartUserID
+	bill.OrderID = cartOrderID
 
 	err = app.models.DB.BillingInfo(bill)
 	if err != nil {
